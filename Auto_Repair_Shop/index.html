@@ -75,8 +75,28 @@
           </div>
 
           <div class="field span-2">
-            <label for="dono">Nome do dono</label>
-            <input type="text" id="dono" placeholder="Nome completo do proprietário" maxlength="80" required>
+            <label for="tipoPessoa">Tipo de pessoa</label>
+            <select id="tipoPessoa">
+              <option value="fisica">Pessoa Física</option>
+              <option value="juridica">Pessoa Jurídica</option>
+            </select>
+          </div>
+
+          <div class="field" id="campoCpf">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" placeholder="Ex.: 000.000.000-00" maxlength="14" inputmode="numeric" required>
+            <small class="error" id="erro-cpf"></small>
+          </div>
+
+          <div class="field" id="campoCnpj" hidden>
+            <label for="cnpj">CNPJ</label>
+            <input type="text" id="cnpj" placeholder="Ex.: 00.000.000/0000-00" maxlength="18" inputmode="numeric" disabled>
+            <small class="error" id="erro-cnpj"></small>
+          </div>
+
+          <div class="field span-2">
+            <label for="dono">Dono ou Empresa</label>
+            <input type="text" id="dono" placeholder="Nome completo do proprietário ou empresa" maxlength="80" required>
             <small class="error" id="erro-dono"></small>
           </div>
 
@@ -137,6 +157,23 @@
     Sistema de Oficina Mecânica &middot; Os dados ficam salvos neste navegador
   </footer>
 
+  <script>
+    const tipoPessoa = document.getElementById('tipoPessoa');
+    const campoCpf = document.getElementById('campoCpf');
+    const campoCnpj = document.getElementById('campoCnpj');
+    const cpf = document.getElementById('cpf');
+    const cnpj = document.getElementById('cnpj');
+
+    tipoPessoa.addEventListener('change', () => {
+      const pessoaFisica = tipoPessoa.value === 'fisica';
+      campoCpf.hidden = !pessoaFisica;
+      campoCnpj.hidden = pessoaFisica;
+      cpf.disabled = !pessoaFisica;
+      cpf.required = pessoaFisica;
+      cnpj.disabled = pessoaFisica;
+      cnpj.required = !pessoaFisica;
+    });
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
