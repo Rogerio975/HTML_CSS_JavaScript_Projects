@@ -372,6 +372,10 @@ input.invalid {
   text-align: center;
 }
 
+.ordem-impressao {
+  display: none;
+}
+
 /* Responsivo */
 @media (max-width: 900px) {
   .layout {
@@ -412,5 +416,81 @@ input.invalid {
   .stat {
     flex: 1;
     min-width: 0;
+  }
+}
+
+@media print {
+  body {
+    min-height: 0;
+    color: #111;
+    background: #fff;
+  }
+
+  body > * {
+    display: none !important;
+  }
+
+  #ordemImpressao {
+    display: block !important;
+    padding: 12mm;
+    color: #111;
+    font-family: Arial, sans-serif;
+  }
+
+  #ordemImpressao h1 {
+    margin-bottom: 4px;
+    text-align: center;
+    font-size: 24px;
+  }
+
+  #ordemImpressao h2 {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .ordem-numero {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .ordem-secao {
+    margin-bottom: 24px;
+  }
+
+  .ordem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .ordem-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #bbb;
+  }
+
+  .ordem-secao .info {
+    margin-bottom: 14px;
+  }
+
+  .ordem-secao .info h3 {
+    color: #444;
+  }
+
+  .ordem-valor {
+    margin: 18px 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .ordem-assinaturas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 72px;
+    text-align: center;
+    white-space: pre-line;
   }
 }

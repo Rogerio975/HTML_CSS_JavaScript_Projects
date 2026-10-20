@@ -23,11 +23,16 @@
     modelo: document.getElementById("modelo"),
     ano: document.getElementById("ano"),
     cor: document.getElementById("cor"),
+    placa: document.getElementById("placa"),
+    quilometragem: document.getElementById("quilometragem"),
     dono: document.getElementById("dono"),
     servicoRealizado: document.getElementById("servicoRealizado"),
+    valorServico: document.getElementById("valorServico"),
     precisaFazer: document.getElementById("precisaFazer"),
     status: document.getElementById("status"),
   };
+
+  const ordemImpressao = document.getElementById("ordemImpressao");
 
   let veiculos = carregar();
 
@@ -64,7 +69,7 @@
     const anoMax = new Date().getFullYear() + 1;
     let ok = true;
 
-    ["marca", "modelo", "cor", "dono"].forEach(function (c) {
+    ["marca", "modelo", "cor", "placa", "dono"].forEach(function (c) {
       if (!campos[c].value.trim()) {
         setErro(c, "Campo obrigatório.");
         ok = false;
@@ -79,6 +84,22 @@
       ok = false;
     } else {
       setErro("ano", "");
+    }
+
+    const quilometragem = Number(campos.quilometragem.value);
+    if (!campos.quilometragem.value || !Number.isInteger(quilometragem) || quilometragem < 0) {
+      setErro("quilometragem", "Informe uma quilometragem válida.");
+      ok = false;
+    } else {
+      setErro("quilometragem", "");
+    }
+
+    const valorServico = Number(campos.valorServico.value);
+    if (!campos.valorServico.value || !Number.isFinite(valorServico) || valorServico < 0) {
+      setErro("valorServico", "Informe um valor válido.");
+      ok = false;
+    } else {
+      setErro("valorServico", "");
     }
 
     return ok;
@@ -105,8 +126,11 @@
     campos.modelo.value = v.modelo;
     campos.ano.value = v.ano;
     campos.cor.value = v.cor;
+    campos.placa.value = v.placa || "";
+    campos.quilometragem.value = v.quilometragem === undefined ? "" : v.quilometragem;
     campos.dono.value = v.dono;
     campos.servicoRealizado.value = v.servicoRealizado;
+    campos.valorServico.value = v.valorServico === undefined ? "" : v.valorServico;
     campos.precisaFazer.value = v.precisaFazer;
     campos.status.value = v.status;
 
@@ -126,8 +150,11 @@
       modelo: campos.modelo.value.trim(),
       ano: Number(campos.ano.value),
       cor: campos.cor.value.trim(),
+      placa: campos.placa.value.trim().toUpperCase(),
+      quilometragem: Number(campos.quilometragem.value),
       dono: campos.dono.value.trim(),
       servicoRealizado: campos.servicoRealizado.value.trim(),
+      valorServico: Number(campos.valorServico.value),
       precisaFazer: campos.precisaFazer.value.trim(),
       status: campos.status.value,
     };
@@ -197,6 +224,60 @@
     return b;
   }
 
+  function imprimirOrdem(id) {
+    const v = veiculos.find(function (x) { return x.id === id; });
+    if (!v) return;
+
+    ordemImpressao.textContent = "";
+    ordemImpressao.setAttribute("aria-hidden", "false");
+
+    const titulo = el("h1", "", "Ordem de Serviço");
+    ordemImpressao.appendChild(titulo);
+    ordemImpressao.appendChild(el("p", "ordem-numero", "OS " + v.id));
+
+    const dadosVeiculo = el("section", "ordem-secao");
+    dadosVeiculo.appendChild(el("h2", "", "Dados do veículo e proprietário"));
+    const veiculoGrid = el("div", "ordem-grid");
+    [
+      ["Proprietário", v.dono],
+      ["Veículo", v.marca + " " + v.modelo],
+      ["Ano", v.ano],
+      ["Cor", v.cor],
+      ["Placa", v.placa || "Não informada"],
+      ["Quilometragem", v.quilometragem === undefined ? "Não informada" : Number(v.quilometragem).toLocaleString("pt-BR") + " km"],
+    ].forEach(function (item) {
+      const campo = el("div", "ordem-campo");
+      campo.appendChild(el("strong", "", item[0]));
+      campo.appendChild(el("span", "", String(item[1])));
+      veiculoGrid.appendChild(campo);
+    });
+    dadosVeiculo.appendChild(veiculoGrid);
+    ordemImpressao.appendChild(dadosVeiculo);
+
+    const dadosServico = el("section", "ordem-secao");
+    dadosServico.appendChild(el("h2", "", "Serviço"));
+    dadosServico.appendChild(bloco("Serviço realizado", v.servicoRealizado));
+    dadosServico.appendChild(bloco("Serviço solicitado", v.precisaFazer));
+    dadosServico.appendChild(el("p", "ordem-valor", "Valor do serviço: " + (
+      v.valorServico === undefined
+        ? "Não informado"
+        : Number(v.valorServico).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+    )));
+    dadosServico.appendChild(el("p", "", "Status: " + (STATUS_LABEL[v.status] || v.status)));
+    ordemImpressao.appendChild(dadosServico);
+
+    const assinaturas = el("div", "ordem-assinaturas");
+    assinaturas.appendChild(el("p", "", "____________________________________\nAssinatura do cliente"));
+    assinaturas.appendChild(el("p", "", "____________________________________\nAssinatura do responsável"));
+    ordemImpressao.appendChild(assinaturas);
+
+    window.print();
+  }
+
+  window.addEventListener("afterprint", function () {
+    ordemImpressao.setAttribute("aria-hidden", "true");
+  });
+
   function criarCard(v) {
     const card = el("article", "vehicle " + v.status);
 
@@ -213,12 +294,18 @@
     chips.appendChild(chip("Modelo", v.modelo));
     chips.appendChild(chip("Ano", v.ano));
     chips.appendChild(chip("Cor", v.cor));
+    chips.appendChild(chip("Placa", v.placa || "Não informada"));
+    chips.appendChild(chip("Quilometragem", v.quilometragem === undefined ? "Não informada" : Number(v.quilometragem).toLocaleString("pt-BR") + " km"));
+    chips.appendChild(chip("Valor do serviço", v.valorServico === undefined
+      ? "Não informado"
+      : Number(v.valorServico).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })));
     card.appendChild(chips);
 
     card.appendChild(bloco("Serviço realizado", v.servicoRealizado));
     card.appendChild(bloco("O que precisa fazer", v.precisaFazer));
 
     const acoes = el("div", "vehicle-actions");
+    acoes.appendChild(botao("Imprimir ordem", "ghost", function () { imprimirOrdem(v.id); }));
     acoes.appendChild(botao("Editar", "ghost", function () { editar(v.id); }));
     if (v.status === "pendente") {
       acoes.appendChild(botao("Iniciar serviço", "ghost", function () { mudarStatus(v.id, "andamento"); }));
@@ -246,7 +333,7 @@
       if (status !== "todos" && v.status !== status) return false;
       if (!termo) return true;
       const alvo = normalizar(
-        [v.marca, v.modelo, v.ano, v.cor, v.dono, v.servicoRealizado, v.precisaFazer].join(" ")
+        [v.marca, v.modelo, v.ano, v.cor, v.placa, v.quilometragem, v.valorServico, v.dono, v.servicoRealizado, v.precisaFazer].join(" ")
       );
       return alvo.indexOf(termo) !== -1;
     });
